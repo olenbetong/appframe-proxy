@@ -54,16 +54,18 @@ async function login(domain, username, password) {
 	};
 
 	const body = querystring.stringify({
+		username,
 		password,
 		remember: false,
-		username
 	});
 
 	const reqOptions = {
 		body,
 		headers: {
 			'Content-Length': body.length,
-			'Content-Type': 'application/x-www-form-urlencoded'
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'Origin': 'https://synergi.olenbetong.no',
+			'Referer': 'https://synergi.olenbetong.no/login',
 		},
 		jar,
 		method: 'POST',

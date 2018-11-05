@@ -15,7 +15,7 @@ test('failed login error message makes sense', async () => {
 	expect(result).toEqual({ error: 'Login failed. Please check your credentials.', success: false });
 });
 
-test('login returns success', async() => {
+test('login returns success', async () => {
 	const result = await login(hostname, user, password);
 
 	expect(result).toEqual({ success: true });
