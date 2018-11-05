@@ -1,0 +1,34 @@
+{
+  "name": "@bjornarvh/appframe-proxy",
+  "version": "0.1.0",
+  "description": "A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website.",
+  "main": "./index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://bvhansen.visualstudio.com/appframe-proxy/_git/appframe-proxy"
+  },
+  "keywords": [
+    "appframe",
+    "appframe web",
+    "appframeweb",
+    "proxy"
+  ],
+  "author": "Bjørnar Vister Hansen <bvh@olenbetong.no>",
+  "license": "MIT",
+  "devDependencies": {
+    "dotenv": "^6.1.0",
+    "eslint": "^5.8.0",
+    "eslint-plugin-jest": "^21.27.1",
+    "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.4",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
