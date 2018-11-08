@@ -14,7 +14,10 @@ function getErrorFromBody(body) {
 
 async function request(options, isRetry = false) {
 	try {
-		const res = await rp(options);
+		const res = await rp({
+			...options,
+			jar
+		});
 		
 		if (res.statusCode === 401) {
 			if (!isRetry) {
@@ -30,7 +33,7 @@ async function request(options, isRetry = false) {
 			}
 		}
 
-		return res.body;
+		return res;
 	} catch (err) {
 		const errorMessage = err.message.indexOf('DOCTYPE') >= 0
 			? getErrorFromBody(err.error)
@@ -55,7 +58,7 @@ async function logout(domain) {
 	try {
 		console.log('Logging out...');
 
-		const res = await request(reqOptions);
+		const res = await rp(reqOptions);
 
 		if (res.statusCode === 200) {
 			console.log('Logged out.');
@@ -96,7 +99,6 @@ async function login(domain, username, password) {
 			'Origin': 'https://synergi.olenbetong.no',
 			'Referer': 'https://synergi.olenbetong.no/login',
 		},
-		jar,
 		method: 'POST',
 		resolveWithFullResponse: true,
 		url: `https://${domain}/login`,
