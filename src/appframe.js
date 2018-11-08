@@ -13,11 +13,12 @@ function getErrorFromBody(body) {
 }
 
 async function request(options, isRetry = false) {
+	const reqOptions = {
+		...options,
+		jar
+	};
 	try {
-		const res = await rp({
-			...options,
-			jar
-		});
+		const res = await rp(reqOptions);
 		
 		if (res.statusCode === 401) {
 			if (!isRetry) {

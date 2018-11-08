@@ -74,7 +74,7 @@ async function startServer() {
 	const options = getOptions();
 
 	let loginResult = await login(options.domain, options.username, options.password);
-
+console.log(loginResult);
 	if (loginResult) {
 		app.all('/*', async function(req, res) {
 			console.log(`Sending request to ${options.domain}${req.originalUrl}...`);
@@ -82,7 +82,7 @@ async function startServer() {
 				body: req.body,
 				method: req.method,
 				resolveWithFullResponse: true,
-				url: `https://${options.domain}${req.originalUrl}`,
+				uri: `https://${options.domain}${req.originalUrl}`,
 			};
 
 			let result = await request(reqOptions);
@@ -92,7 +92,7 @@ async function startServer() {
 				'Content-Length': result.headers['content-length'],
 				'Content-Type': result.headers['content-type']
 			});
-			// res.sendStatus(result.statusCode);
+
 			res.status(result.statusCode).send(result.body);
 		});
 

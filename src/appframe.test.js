@@ -1,5 +1,5 @@
 const dotenv = require('dotenv');
-const { login } = require('./appframe');
+const { login, request } = require('./appframe');
 
 dotenv.load();
 
@@ -19,4 +19,18 @@ test('login returns success', async () => {
 	const result = await login(hostname, user, password);
 
 	expect(result).toEqual({ success: true });
+});
+
+test('can get authenticated stuff after login', async () => {
+	await login(hostname, user, password);
+
+	const reqOptions = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: `https://${hostname}/api/elements/1.0/projects?ProjectID=P16-1157`,
+	};
+
+	const result = await request(reqOptions);
+
+	console.log(result);
 });
