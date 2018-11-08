@@ -1,5 +1,5 @@
 const rp = require('request-promise-native');
-const jar = rp.jar();
+let jar = rp.jar();
 const cheerio = require('cheerio');
 const querystring = require('querystring');
 
@@ -45,7 +45,36 @@ async function request(options, isRetry = false) {
 	}
 }
 
+async function logout(domain) {
+	const reqOptions = {
+		jar,
+		method: 'GET',
+		url: `https://${domain}/logout`
+	};
+
+	try {
+		console.log('Logging out...');
+
+		const res = await request(reqOptions);
+
+		if (res.statusCode === 200) {
+			console.log('Logged out.');
+
+			return true;
+		}
+
+		console.warn(`Logout failed: ${res.statusCode} ${res.statusMessage}`);
+
+		return false;
+	} catch (err) {
+		console.error(err.message);
+
+		return false;
+	}
+}
+
 async function login(domain, username, password) {
+	jar = rp.jar();
 	loginData = {
 		domain,
 		password,
@@ -93,7 +122,6 @@ async function login(domain, username, password) {
 			};
 		} else {
 			console.warn(loginFailedStr);
-
 			return {
 				error: `Login failed (${res.statusCode}: ${res.statusMessage})`,
 				success: false
@@ -111,5 +139,6 @@ async function login(domain, username, password) {
 
 module.exports = {
 	login,
+	logout,
 	request
 };
