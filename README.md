@@ -33,7 +33,7 @@ appframe-proxy --username myuser --password mypassword --hostname example.com
 You can import the server with CommonJS.
 
 ```js
-const proxy = require('appframe-proxy');
+const proxy = require('@olenbetong/appframe-proxy');
 proxy.startServer({
 	hostname: 'example.com',
 	password: 'Password1',
