@@ -1,6 +1,7 @@
 const express = require('express');
 const minimist = require('minimist');
 const readline = require('readline-sync');
+const throttle = require('lodash.throttle');
 const AppframeClient = require('./src/appframe');
 const args = minimist(process.argv.slice(2));
 const app = express();
@@ -70,6 +71,18 @@ function requestArg(options) {
 	return answer;
 }
 
+let requestCount = 0;
+
+function reportRequest() {
+	requestCount++;
+	throttledReport();
+}
+
+const throttledReport = throttle(function() {
+	console.log(`Handled ${requestCount} requests the last second.`);
+	requestCount = 0;
+}, 1000);
+
 async function startServer() {
 	const options = getOptions();
 	const client = new AppframeClient(options);
@@ -80,7 +93,7 @@ async function startServer() {
 			const [path, query] = req.originalUrl.split('?');
 			const uri = client.getUrl(path, query);
 
-			console.log(`Sending request to ${uri}...`);
+			reportRequest();
 
 			const reqOptions = {
 				body: req.body,
@@ -95,7 +108,7 @@ async function startServer() {
 				res.set({ [header]: result.headers[header] });
 			}
 
-			res.status(result.statusCode).send(result.body);
+			res.status(result.statusCode).write(result.body);
 		});
 
 		app.listen(options.port, () => {

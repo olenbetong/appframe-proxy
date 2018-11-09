@@ -138,7 +138,7 @@ class AppframeClient {
 
 		try {
 			const res = await rp(reqOptions);
-	
+
 			return res;
 		} catch (err) {
 			let errorMessage = err.message;
