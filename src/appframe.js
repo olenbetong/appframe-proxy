@@ -1,147 +1,179 @@
 const rp = require('request-promise-native');
-let jar = rp.jar();
 const cheerio = require('cheerio');
 const querystring = require('querystring');
 
 const loginFailedStr = 'Login failed. Please check your credentials.';
-let loginData = {};
 
-function getErrorFromBody(body) {
-	const $ = cheerio.load(body);
+class AppframeClient {
+	constructor(props) {
+		this.props = {
+			protocol: 'https:',
+			...props
+		};
 
-	return $('#details pre').text();
-}
+		this.jar = null;
+	}
 
-async function request(options, isRetry = false) {
-	const reqOptions = {
-		...options,
-		jar
-	};
-	try {
-		const res = await rp(reqOptions);
-		
-		if (res.statusCode === 401) {
-			if (!isRetry) {
-				const loginRes = await login(loginData.domain, loginData.username, loginData.password);
+	createPostFormRequest(pathname, data) {
+		const body = querystring.stringify(data);
 
-				if (loginRes.success) {
-					return await request(options, true);
-				} else {
-					throw new Error('Session expired. Login attempt failed.');
-				}
+		return {
+			body,
+			headers: {
+				'Content-Length': body.length,
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			jar: this.jar,
+			method: 'POST',
+			resolveWithFullResponse: true,
+			url: this.getUrl(pathname)
+		};
+	}
+
+	getUrl(pathname, query) {
+		const url = new URL(`${this.props.protocol}//${this.props.hostname}`);
+		url.pathname = pathname;
+
+		if (query) url.search = query;
+
+		return url;
+	}
+
+	async login() {
+		if (this.jar) {
+			await this.logout();
+		}
+
+		this.jar = rp.jar();
+	
+		const { password, username } = this.props;
+
+		const body = {
+			username,
+			password,
+			remember: false,
+		};
+
+		const options = this.createPostFormRequest('/login', body);
+	
+		try {
+			console.log('Authenticating...');
+	
+			const res = await rp(options);
+	
+			if (res.statusCode === 200 && !res.body.includes(loginFailedStr)) {
+				console.log('Authentication successful.');
+	
+				return {
+					success: true
+				};
+			} else if (res.body.includes(loginFailedStr)) {
+				console.warn(loginFailedStr);
+	
+				return {
+					error: loginFailedStr,
+					success: false
+				};
 			} else {
-				throw new Error('Session expired. Failed to re-run request after new login.');
+				console.warn(loginFailedStr);
+				return {
+					error: `Login failed (${res.statusCode}: ${res.statusMessage})`,
+					success: false
+				};
 			}
-		}
-
-		return res;
-	} catch (err) {
-		const errorMessage = err.message.indexOf('DOCTYPE') >= 0
-			? getErrorFromBody(err.error)
-			: err.error;
-
-		console.error(errorMessage);
-
-		return {
-			error: errorMessage,
-			success: false
-		};
-	}
-}
-
-async function logout(domain) {
-	const reqOptions = {
-		jar,
-		method: 'GET',
-		url: `https://${domain}/logout`
-	};
-
-	try {
-		console.log('Logging out...');
-
-		const res = await rp(reqOptions);
-
-		if (res.statusCode === 200) {
-			console.log('Logged out.');
-
-			return true;
-		}
-
-		console.warn(`Logout failed: ${res.statusCode} ${res.statusMessage}`);
-
-		return false;
-	} catch (err) {
-		console.error(err.message);
-
-		return false;
-	}
-}
-
-async function login(domain, username, password) {
-	jar = rp.jar();
-	loginData = {
-		domain,
-		password,
-		remember: false,
-		username
-	};
-
-	const body = querystring.stringify({
-		username,
-		password,
-		remember: false,
-	});
-
-	const reqOptions = {
-		body,
-		headers: {
-			'Content-Length': body.length,
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'Origin': 'https://synergi.olenbetong.no',
-			'Referer': 'https://synergi.olenbetong.no/login',
-		},
-		method: 'POST',
-		resolveWithFullResponse: true,
-		url: `https://${domain}/login`,
-	};
-
-	try {
-		console.log('Authenticating...');
-
-		const res = await rp(reqOptions);
-
-		if (res.statusCode === 200 && !res.body.includes(loginFailedStr)) {
-			console.log('Authentication successful.');
-
+		} catch (err) {
+			console.error(err);
+	
 			return {
-				success: true
-			};
-		} else if (res.body.includes(loginFailedStr)) {
-			console.warn(loginFailedStr);
-
-			return {
-				error: loginFailedStr,
-				success: false
-			};
-		} else {
-			console.warn(loginFailedStr);
-			return {
-				error: `Login failed (${res.statusCode}: ${res.statusMessage})`,
+				error: err,
 				success: false
 			};
 		}
-	} catch (err) {
-		console.error(err);
+	}
 
-		return {
-			error: err,
-			success: false
+	async logout() {
+		const reqOptions = {
+			jar: this.jar,
+			method: 'POST',
+			url: this.getUrl('logout'),
 		};
+	
+		try {
+			console.log('Logging out...');
+	
+			const res = await rp(reqOptions);
+	
+			this.jar = null;
+
+			if (res.statusCode === 200) {
+				console.log('Logged out.');
+	
+				return true;
+			}
+	
+			console.warn(`Logout failed: ${res.statusCode} ${res.statusMessage}`);
+	
+			return false;
+		} catch (err) {
+			this.jar = null;
+
+			if (err.statusCode === 303) {
+				console.log('Logged out');
+
+				return true;
+			}
+
+			console.error(err.message);
+	
+			return false;
+		}
+	}
+
+	getErrorFromBody(body) {
+		const $ = cheerio.load(body);
+	
+		return $('#details pre').text();
+	}
+
+	async request(options, isRetry = false) {
+		const reqOptions = {
+			...options,
+			jar: this.jar
+		};
+
+		try {
+			const res = await rp(reqOptions);
+	
+			return res;
+		} catch (err) {
+			let errorMessage = err.message;
+
+			if (err.statusCode === 401) {
+				if (!isRetry) {
+					const loginRes = await this.login();
+	
+					if (loginRes.success) {
+						return await this.request(options, true);
+					} else {
+						errorMessage = '401 - Session expired. Login attempt failed.';
+					}
+				} else {
+					errorMessage = '401 - Session expired. Failed to re-run request after new login.';
+				}
+			} else if (err.error.toLowerCase().indexOf('doctype') >= 0) {
+				errorMessage = this.getErrorFromBody(err.error);
+			} else if (err.statusCode) {
+				errorMessage = `${err.statusCode} - ${err.error}`;
+			}
+	
+			console.error(errorMessage);
+	
+			return {
+				error: errorMessage,
+				success: false
+			};
+		}
 	}
 }
 
-module.exports = {
-	login,
-	logout,
-	request
-};
+module.exports = AppframeClient;

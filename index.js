@@ -1,7 +1,7 @@
 const express = require('express');
 const minimist = require('minimist');
 const readline = require('readline-sync');
-const { login, request } = require('./src/appframe');
+const AppframeClient = require('./src/appframe');
 const args = minimist(process.argv.slice(2));
 const app = express();
 
@@ -28,9 +28,9 @@ function getOptions() {
 	}
 	
 	if (args.domain || args.hostname) {
-		options.domain = args.domain || args.hostname;
+		options.hostname = args.domain || args.hostname;
 	} else {
-		options.domain = requestArg({
+		options.hostname = requestArg({
 			title: 'Which domain should we connect to?'
 		});
 	}
@@ -72,20 +72,24 @@ function requestArg(options) {
 
 async function startServer() {
 	const options = getOptions();
+	const client = new AppframeClient(options);
+	const loginResult = await client.login();
 
-	let loginResult = await login(options.domain, options.username, options.password);
-console.log(loginResult);
 	if (loginResult) {
 		app.all('/*', async function(req, res) {
-			console.log(`Sending request to ${options.domain}${req.originalUrl}...`);
+			const [path, query] = req.originalUrl.split('?');
+			const uri = client.getUrl(path, query);
+
+			console.log(`Sending request to ${uri}...`);
+
 			const reqOptions = {
 				body: req.body,
 				method: req.method,
 				resolveWithFullResponse: true,
-				uri: `https://${options.domain}${req.originalUrl}`,
+				uri,
 			};
 
-			let result = await request(reqOptions);
+			let result = await client.request(reqOptions);
 
 			res.set({
 				'Cache-Control': result.headers['cache-control'],
