@@ -9,39 +9,54 @@ const {
 	APPFRAME_HOSTNAME: hostname
 } = process.env;
 
-test('failed login error message makes sense', async () => {
-	const client = new AppframeClient({
-		hostname,
-		password: 'asdlkfje',
-		username: 'asldkfjø',
-	});
-	const result = await client.login();
-	await client.logout();
+const client = new AppframeClient({
+	hostname,
+	password,
+	username,
+});
 
+const failedClient = new AppframeClient({
+	hostname,
+	password: 'asdlkfje',
+	username: 'asldkfjø',
+});
+
+test('failed login error message makes sense', async () => {
+	const result = await failedClient.login();
+	
 	expect(result).toEqual({ error: 'Login failed. Please check your credentials.', success: false });
+	
+	const reqOptions = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: client.getUrl('/api/elements/1.0/projects', 'ProjectID=P16-1157'),
+	};
+	
+	const reqResult = await failedClient.request(reqOptions);
+	
+	expect(reqResult).toEqual({
+		error: '401 - Session expired. Login attempt failed.',
+		success: false
+	});
+
+	await failedClient.logout();
 });
 
 test('login returns success', async () => {
-	const client = new AppframeClient({
-		hostname,
-		password,
-		username,
-	});
 	const result = await client.login();
-	await client.logout();
+	const result2 = await client.login();
 
 	expect(result).toEqual({ success: true });
+	expect(result2).toEqual({ success: true });
+});
+
+test('logout returns true', async () => {
+	const result = await client.logout();
+
+	expect(result).toBe(true);
 });
 
 test('can get authenticated stuff after login', async () => {
-	const client = new AppframeClient({
-		hostname,
-		password,
-		username,
-	});
-	
-	await client.login();
-
 	const reqOptions = {
 		method: 'GET',
 		resolveWithFullResponse: true,
@@ -49,7 +64,6 @@ test('can get authenticated stuff after login', async () => {
 	};
 
 	const result = await client.request(reqOptions);
-	await client.logout();
 
 	expect(result.statusCode).toBe(200);
 
@@ -57,4 +71,38 @@ test('can get authenticated stuff after login', async () => {
 	expect(body instanceof Array).toBe(true);
 	expect(body.length).toBe(1);
 	expect(body[0].ProjectId).toBe('P16-1157');
+});
+
+test('error messages parsed properly', async () => {
+	const reqOptions = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: client.getUrl('/api/elements/1.0/projects?ProjectID=P16-1157'), // setting search string in pathname results in potentially dangerous request
+	};
+
+	const result = await client.request(reqOptions);
+
+	expect(result).toEqual({
+		error: '400 - A potentially dangerous Request.Path value was detected from the client (?).',
+		success: false,
+	});
+});
+
+test('server errors handled', async () => {
+	const reqOptions = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: client.getUrl('article-that-should-never-ever-exist-' + Math.random().toString(32).slice(2))
+	};
+
+	const result = await client.request(reqOptions);
+
+	expect(result).toEqual({
+		error: '404 - Not Found',
+		success: false
+	});
+});
+
+afterAll(async () => {
+	await client.logout();
 });

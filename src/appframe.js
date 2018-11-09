@@ -6,11 +6,19 @@ const loginFailedStr = 'Login failed. Please check your credentials.';
 
 class AppframeClient {
 	constructor(props) {
-		this.props = {
-			protocol: 'https:',
-			...props
-		};
+		const {
+			username,
+			password,
+			hostname,
+		} = props;
 
+		Object.assign(this, {
+			hostname,
+			password,
+			username,
+		});
+		
+		this.protocol = 'https:';
 		this.jar = null;
 	}
 
@@ -31,7 +39,7 @@ class AppframeClient {
 	}
 
 	getUrl(pathname, query) {
-		const url = new URL(`${this.props.protocol}//${this.props.hostname}`);
+		const url = new URL(`${this.protocol}//${this.hostname}`);
 		url.pathname = pathname;
 
 		if (query) url.search = query;
@@ -46,7 +54,7 @@ class AppframeClient {
 
 		this.jar = rp.jar();
 	
-		const { password, username } = this.props;
+		const { password, username } = this;
 
 		const body = {
 			username,
@@ -74,13 +82,13 @@ class AppframeClient {
 					error: loginFailedStr,
 					success: false
 				};
-			} else {
-				console.warn(loginFailedStr);
-				return {
-					error: `Login failed (${res.statusCode}: ${res.statusMessage})`,
-					success: false
-				};
 			}
+
+			console.warn(loginFailedStr);
+			return {
+				error: `Login failed (${res.statusCode}: ${res.statusMessage})`,
+				success: false
+			};
 		} catch (err) {
 			console.error(err);
 	
@@ -100,33 +108,20 @@ class AppframeClient {
 	
 		try {
 			console.log('Logging out...');
-	
-			const res = await rp(reqOptions);
-	
-			this.jar = null;
-
-			if (res.statusCode === 200) {
-				console.log('Logged out.');
-	
-				return true;
-			}
-	
-			console.warn(`Logout failed: ${res.statusCode} ${res.statusMessage}`);
-	
-			return false;
+			await rp(reqOptions);
 		} catch (err) {
-			this.jar = null;
+			if (err.statusCode !== 303) {
+				this.jar = null;
+				console.err(err.message);
 
-			if (err.statusCode === 303) {
-				console.log('Logged out');
-
-				return true;
+				return false;
 			}
-
-			console.error(err.message);
-	
-			return false;
 		}
+
+		this.jar = null;
+		console.log('Logged out');
+
+		return true;
 	}
 
 	getErrorFromBody(body) {
@@ -162,8 +157,12 @@ class AppframeClient {
 				}
 			} else if (err.error.toLowerCase().indexOf('doctype') >= 0) {
 				errorMessage = this.getErrorFromBody(err.error);
-			} else if (err.statusCode) {
-				errorMessage = `${err.statusCode} - ${err.error}`;
+
+				if (errorMessage) errorMessage = `${err.statusCode} - ${errorMessage}`;
+			}
+			
+			if (!errorMessage && err.statusCode) {
+				errorMessage = `${err.statusCode} - ${err.response.statusMessage}`;
 			}
 	
 			console.error(errorMessage);
