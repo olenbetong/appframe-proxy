@@ -17,7 +17,7 @@ module.exports = {
             "tab"
         ],
         "linebreak-style": [
-            "error",
+            "off",
             "windows"
         ],
         "no-console": "off",

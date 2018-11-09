@@ -2,11 +2,11 @@ const express = require('express');
 const minimist = require('minimist');
 const readline = require('readline-sync');
 const throttle = require('lodash.throttle');
-const AppframeClient = require('./src/appframe');
+const AppframeClient = require('@olenbetong/appframe-client');
 const args = minimist(process.argv.slice(2));
 const app = express();
 
-function getOptions(provided) {
+function getOptions(provided = {}) {
 	const options = {
 		port: 8082,
 		...provided,

@@ -28,6 +28,7 @@
     "jest": "^23.6.0"
   },
   "dependencies": {
+    "@olenbetong/appframe-client": "^1.0.0",
     "cheerio": "^1.0.0-rc.2",
     "express": "^4.16.4",
     "lodash.throttle": "^4.1.1",
