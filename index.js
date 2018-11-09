@@ -6,9 +6,10 @@ const AppframeClient = require('./src/appframe');
 const args = minimist(process.argv.slice(2));
 const app = express();
 
-function getOptions() {
+function getOptions(provided) {
 	const options = {
-		port: 8082
+		port: 8082,
+		...provided,
 	};
 	
 	if (args.username || args.login || args.user) {
@@ -83,8 +84,8 @@ const throttledReport = throttle(function() {
 	requestCount = 0;
 }, 1000);
 
-async function startServer() {
-	const options = getOptions();
+async function startServer(props) {
+	const options = getOptions(props);
 	const client = new AppframeClient(options);
 	const loginResult = await client.login();
 
@@ -119,4 +120,6 @@ async function startServer() {
 	}
 }
 
-startServer();
+module.exports = {
+	startServer
+};

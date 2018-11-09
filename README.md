@@ -1,21 +1,50 @@
 # Appframe Web Proxy 
 
-A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website. 
+A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website. Useful if you are developing applications locally and need to access code modules/data on an AppframeWeb website.
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Installation
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+Install globally:
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+```
+npm install -g @olenbetong/appframe-proxy
+appframe-proxy --username myuser --password mypassword --hostname example.com
+```
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://www.visualstudio.com/en-us/docs/git/create-a-readme). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+or install as a development dependency:
+
+```
+npm install --save-dev @olenbetong/appframe-proxy
+npx appframe-proxy --username myuser --password mypassword --hostname example.com
+```
+
+## Running
+
+### Command line
+
+To start the proxy, run the `appframe-proxy` command. You will be prompted for any required option that wasn't passed as an argument to the command.
+
+```
+appframe-proxy --username myuser --password mypassword --hostname example.com
+```
+
+### CommonJS
+
+You can import the server with CommonJS.
+
+```js
+const proxy = require('appframe-proxy');
+proxy.startServer({
+	hostname: 'example.com',
+	password: 'Password1',
+	port: 8087,
+	username: 'myuser',
+})
+```
+
+### Options
+
+ * **username** - User that will be used to log in to the AppframeWeb website
+ * **password** - Password for the user
+ * **hostname** - Hostname the proxy will send requests to
+ * **port** (optional) - Port where the proxy will listen to requests (default 8082)
