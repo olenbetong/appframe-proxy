@@ -27,8 +27,8 @@ function getOptions() {
 		});
 	}
 	
-	if (args.domain || args.hostname) {
-		options.hostname = args.domain || args.hostname;
+	if (args.domain || args.hostname || args.host) {
+		options.hostname = args.domain || args.hostname || args.host;
 	} else {
 		options.hostname = requestArg({
 			title: 'Which domain should we connect to?'
@@ -91,11 +91,9 @@ async function startServer() {
 
 			let result = await client.request(reqOptions);
 
-			res.set({
-				'Cache-Control': result.headers['cache-control'],
-				'Content-Length': result.headers['content-length'],
-				'Content-Type': result.headers['content-type']
-			});
+			for (let header in result.headers) {
+				res.set({ [header]: result.headers[header] });
+			}
 
 			res.status(result.statusCode).send(result.body);
 		});
