@@ -51,6 +51,10 @@ proxy.startServer({
 
 ## Changes
 
-### 2018-11-09 - 1.01
+### 2018-11-09 - 1.0.2
+
+ * Moved AppframeClient class to separate package `@olenbetong/appframe-client`
+
+### 2018-11-09 - 1.0.1
 
  * Fixed provided options ignored when using CommonJS
