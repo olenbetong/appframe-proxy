@@ -12,33 +12,41 @@ function getOptions(provided) {
 		...provided,
 	};
 	
-	if (args.username || args.login || args.user) {
-		options.username = args.username || args.login || args.user;
-	} else {
-		options.username = requestArg({
-			title: 'What \'s your login?'
-		});
+	if (!options.username) {
+		if (args.username || args.login || args.user) {
+			options.username = args.username || args.login || args.user;
+		} else {
+			options.username = requestArg({
+				title: 'What \'s your login?'
+			});
+		}
 	}
 	
-	if (args.password || args.pwd) {
-		options.password = args.password || args.pwd;
-	} else {
-		options.password = requestArg({
-			secret: true,
-			title: 'What\'s your password?'
-		});
+	if (!options.password) {
+		if (args.password || args.pwd) {
+			options.password = args.password || args.pwd;
+		} else {
+			options.password = requestArg({
+				secret: true,
+				title: 'What\'s your password?'
+			});
+		}
 	}
 	
-	if (args.domain || args.hostname || args.host) {
-		options.hostname = args.domain || args.hostname || args.host;
-	} else {
-		options.hostname = requestArg({
-			title: 'Which domain should we connect to?'
-		});
+	if (!options.hostname) {
+		if (args.domain || args.hostname || args.host) {
+			options.hostname = args.domain || args.hostname || args.host;
+		} else {
+			options.hostname = requestArg({
+				title: 'Which domain should we connect to?'
+			});
+		}
 	}
 	
-	if (args.port && Number.isInteger(Number(args.port))) {
-		options.port = Number(args.port);
+	if (!provided.port) {
+		if (args.port && Number.isInteger(Number(args.port))) {
+			options.port = Number(args.port);
+		}
 	}
 
 	return options;

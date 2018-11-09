@@ -48,3 +48,9 @@ proxy.startServer({
  * **password** - Password for the user
  * **hostname** - Hostname the proxy will send requests to
  * **port** (optional) - Port where the proxy will listen to requests (default 8082)
+
+## Changes
+
+### 2018-11-09 - 1.01
+
+ * Fixed provided options ignored when using CommonJS
