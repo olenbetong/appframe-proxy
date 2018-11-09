@@ -3,7 +3,7 @@
   "bin": {
     "appframe": "./bin/appframe-proxy"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website.",
   "main": "./index.js",
   "scripts": {
