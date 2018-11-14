@@ -1,7 +1,7 @@
 {
   "name": "@olenbetong/appframe-proxy",
   "bin": {
-    "appframe": "./bin/appframe-proxy"
+    "appframe-proxy": "./bin/appframe-proxy"
   },
   "version": "1.0.2",
   "description": "A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website.",
