@@ -51,6 +51,10 @@ proxy.startServer({
 
 ## Changes
 
+### 2018-11-03 - 1.0.3
+
+ * Fixed wrong binary name
+
 ### 2018-11-09 - 1.0.2
 
  * Moved AppframeClient class to separate package `@olenbetong/appframe-client`
