@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://bvhansen.visualstudio.com/appframe-proxy/_git/appframe-proxy"
+    "url": "https://github.com/bjornarvh/appframe-proxy.git"
   },
   "keywords": [
     "appframe",
