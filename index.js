@@ -1,10 +1,9 @@
 const express = require('express');
 const minimist = require('minimist');
 const readline = require('readline-sync');
-const throttle = require('lodash.throttle');
-const AppframeClient = require('@olenbetong/appframe-client');
 const args = minimist(process.argv.slice(2));
 const app = express();
+const proxyFactory = require('./middleware');
 
 function getOptions(provided = {}) {
 	const options = {
@@ -80,52 +79,14 @@ function requestArg(options) {
 	return answer;
 }
 
-let requestCount = 0;
-
-function reportRequest() {
-	requestCount++;
-	throttledReport();
-}
-
-const throttledReport = throttle(function() {
-	console.log(`Handled ${requestCount} requests the last second.`);
-	requestCount = 0;
-}, 1000);
-
 async function startServer(props) {
 	const options = getOptions(props);
-	const client = new AppframeClient(options);
-	const loginResult = await client.login();
+	const proxy = await proxyFactory(options);
+	app.use('/*', proxy);
 
-	if (loginResult) {
-		app.all('/*', async function(req, res) {
-			const [path, query] = req.originalUrl.split('?');
-			const uri = client.getUrl(path, query);
-
-			reportRequest();
-
-			const reqOptions = {
-				body: req.body,
-				method: req.method,
-				resolveWithFullResponse: true,
-				uri,
-			};
-
-			let result = await client.request(reqOptions);
-
-			for (let header in result.headers) {
-				res.set({ [header]: result.headers[header] });
-			}
-
-			res.status(result.statusCode).write(result.body);
-		});
-
-		app.listen(options.port, () => {
-			console.log(`Appframe proxy listening on port ${options.port}`);
-		});
-	} else {
-		console.error('Login failed :(');
-	}
+	app.listen(options.port, () => {
+		console.log(`Appframe proxy listening on port ${options.port}`);
+	});
 }
 
 module.exports = {
