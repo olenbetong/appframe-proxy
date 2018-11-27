@@ -1,24 +1,16 @@
 # Appframe Web Proxy 
 
-A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website. Useful if you are developing applications locally and need to access code modules/data on an AppframeWeb website.
+A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website. Useful if you are developing applications locally and need to access code modules/data on an AppframeWeb website. You can either use the command line to start a standalone express server that proxies everything, or use the middleware in an existing express application.
 
 ## Installation
 
-Install globally:
-
-```
-npm install -g @olenbetong/appframe-proxy
-appframe-proxy --username myuser --password mypassword --hostname example.com
-```
-
-or install as a development dependency:
+Install as a development dependency:
 
 ```
 npm install --save-dev @olenbetong/appframe-proxy
-npx appframe-proxy --username myuser --password mypassword --hostname example.com
 ```
 
-## Running
+## Usage
 
 ### Command line
 
@@ -39,7 +31,20 @@ proxy.startServer({
 	password: 'Password1',
 	port: 8087,
 	username: 'myuser',
-})
+});
+```
+
+### Middleware
+
+```js
+const createMiddleware = require('@olenbetong/appframe-proxy/middleware');
+const proxy = createMiddleware({
+	hostname: 'example.com',
+	password: 'Password1',
+	username: 'myuser'
+});
+
+app.use('/api', proxy);
 ```
 
 ### Options
@@ -50,6 +55,15 @@ proxy.startServer({
  * **port** (optional) - Port where the proxy will listen to requests (default 8082)
 
 ## Changelog
+
+### [1.1.0] - 2018-11-16
+
+#### Added
+
+ * Middleware now available to use in existing express applications (e.g. webpack-dev-server)
+
+#### Fixed
+ * Image requests should now work properly
 
 ### [1.0.4] - 2018-11-16
 
