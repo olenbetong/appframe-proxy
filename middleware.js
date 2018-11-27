@@ -5,18 +5,18 @@ const proxy = require('express-http-proxy');
 module.exports = async function createMiddleware(options) {
 	const {
 		hostname,
-		login,
 		password,
 		protocol = 'https',
-		proxyOptions = {}
+		proxyOptions = {},
+		username,
 	} = options;
 
-	const client = new AppframeClient({ hostname, login, password });
-	const { success } = await client.login();
+	const client = new AppframeClient({ hostname, username, password });
 	const { proxyReqOptDecorator } = proxyOptions;
 
 	proxyOptions.proxyReqOptDecorator = async function(proxyReqOpts, srcReq) {
 		let nextOpts = proxyReqOpts;
+		nextOpts.path = srcReq.baseUrl;
 
 		if (typeof proxyReqOptDecorator === 'function') {
 			nextOpts = proxyReqOptDecorator(proxyReqOpts, srcReq);
@@ -40,9 +40,13 @@ module.exports = async function createMiddleware(options) {
 		if (cookies.length >= 2) {
 			nextOpts.headers['Cookie'] = cookies.join(';');
 		}
-		console.log(cookies);
+
 		return nextOpts;
 	};
+
+	proxyOptions.proxyReqPathResolver = (req) => req.baseUrl;
+
+	const { success } = await client.login();
 
 	if (success) {
 		return proxy(`${protocol}://${hostname}`, proxyOptions);
