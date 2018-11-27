@@ -36,15 +36,52 @@ proxy.startServer({
 
 ### Middleware
 
+The createMiddleware is an async function, and resolves with the proxy middleware when a session has been created successfully.
+
+```js
+const app = require('express')();
+const createMiddleware = require('@olenbetong/appframe-proxy/middleware');
+
+async function startServer() {
+	const proxy = await createMiddleware({
+		hostname: 'example.com',
+		password: 'Password1',
+		username: 'myuser'
+	});
+	
+	app.use('/api', proxy);
+
+	app.listen(...);
+}
+```
+
+### In webpack-dev-server
+
 ```js
 const createMiddleware = require('@olenbetong/appframe-proxy/middleware');
-const proxy = createMiddleware({
-	hostname: 'example.com',
-	password: 'Password1',
-	username: 'myuser'
-});
 
-app.use('/api', proxy);
+async function getConfig() {
+	const proxy = createMiddleware({
+		hostname: 'example.com',
+		password: 'Password1',
+		username: 'myuser'
+	});
+
+	return { // webpack config object
+		...
+		devServer: {
+			before: function(app) {
+				// add any paths that should be passed to the Appframe website here
+				app.use('/api/*', proxy);
+				app.use('/file/*', proxy);
+				app.use('/static/*', proxy);
+			}
+		}
+		...
+	}
+}
+
+module.exports = getConfig;
 ```
 
 ### Options
@@ -63,6 +100,7 @@ app.use('/api', proxy);
  * Middleware now available to use in existing express applications (e.g. webpack-dev-server)
 
 #### Fixed
+
  * Image requests should now work properly
 
 ### [1.0.4] - 2018-11-16
