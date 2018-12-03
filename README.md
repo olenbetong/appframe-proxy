@@ -93,6 +93,12 @@ module.exports = getConfig;
 
 ## Changelog
 
+### [1.1.1](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.4...v1.1.0) - 2018-12-03
+
+#### Fixed
+
+ * Fixed search part of url not passed to destination
+
 ### [1.1.0](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.4...v1.1.0) - 2018-11-16
 
 #### Added

@@ -12,7 +12,7 @@ module.exports = async function createMiddleware(options) {
 	} = options;
 
 	const client = new AppframeClient({ hostname, username, password });
-	const { proxyReqOptDecorator } = proxyOptions;
+	const { proxyReqOptDecorator, proxyReqPathResolver } = proxyOptions;
 
 	proxyOptions.proxyReqOptDecorator = async function(proxyReqOpts, srcReq) {
 		let nextOpts = proxyReqOpts;
@@ -44,7 +44,9 @@ module.exports = async function createMiddleware(options) {
 		return nextOpts;
 	};
 
-	proxyOptions.proxyReqPathResolver = (req) => req.baseUrl;
+	if (!proxyReqPathResolver) {
+		proxyOptions.proxyReqPathResolver = (req) => req.originalUrl;
+	}
 
 	const { success } = await client.login();
 

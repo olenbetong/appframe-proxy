@@ -25,7 +25,8 @@
     "dotenv": "^6.1.0",
     "eslint": "^5.9.0",
     "eslint-plugin-jest": "^22.0.1",
-    "jest": "^23.6.0"
+    "jest": "^23.6.0",
+    "jest-fetch-mock": "^2.0.0"
   },
   "dependencies": {
     "@olenbetong/appframe-client": "^1.0.3",
