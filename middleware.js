@@ -27,15 +27,20 @@ module.exports = async function createMiddleware(options) {
 
 		nextOpts.headers['X-Requested-With', 'XMLHttpRequest'];
 
-		let sessionCookies = client.jar.getCookies(`${protocol}://${hostname}`);
-		let currentCookies = nextOpts.headers['Cookie'];
-		let cookies = currentCookies ? currentCookies.split(/;\s*/) : [];
+		const sessionCookies = client.getSessionCookies();
+		const currentCookies = nextOpts.headers['Cookie'];
+		const cookies = currentCookies ? currentCookies.split(/;\s*/) : [];
+		
+		const oneHourAgo = new Date();
+		oneHourAgo.setHours(oneHourAgo.getHours() - 1);
 
-		for (let cookie of sessionCookies) {
-			if (['AppframeWebAuth', 'AppframeWebSession'].includes(cookie.key)) {
-				cookies.push(`${cookie.key}=${cookie.value}`);
-			}
+		if (sessionCookies.AppframeWebAuth.creation < oneHourAgo) {
+			await client.login();
 		}
+
+		['AppframeWebAuth', 'AppframeWebSession'].forEach(key => {
+			cookies.push(`${key}=${sessionCookies[key].value}`);
+		});
 
 		if (cookies.length >= 2) {
 			nextOpts.headers['Cookie'] = cookies.join(';');
