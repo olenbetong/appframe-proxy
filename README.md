@@ -93,25 +93,31 @@ module.exports = getConfig;
 
 ## Changelog
 
-### [1.1.3](https://github.com/bjornarvh/appframe-proxy/compare/v1.1.2...v1.1.3) - 2018-12-18
+### [1.1.4](https://github.com/olenbetong/appframe-proxy/compare/v1.1.3...v1.1.4) - 2018-12-18
+
+#### Changed
+
+ * Moved repository to olenbetong organization.
+
+### [1.1.3](https://github.com/olenbetong/appframe-proxy/compare/v1.1.2...v1.1.3) - 2018-12-18
 
 #### Changed
 
  * Proxy will now automatically refresh session if cookie is older than 1 hour
 
-### [1.1.2](https://github.com/bjornarvh/appframe-proxy/compare/v1.1.1...v1.1.2) - 2018-12-03
+### [1.1.2](https://github.com/olenbetong/appframe-proxy/compare/v1.1.1...v1.1.2) - 2018-12-03
 
-### Changed
+#### Changed
 
  * Updated AppframeClient to 2.0.0
 
-### [1.1.1](https://github.com/bjornarvh/appframe-proxy/compare/v1.1.0...v1.1.1) - 2018-12-03
+### [1.1.1](https://github.com/olenbetong/appframe-proxy/compare/v1.1.0...v1.1.1) - 2018-12-03
 
 #### Fixed
 
  * Fixed search part of url not passed to destination
 
-### [1.1.0](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.4...v1.1.0) - 2018-11-16
+### [1.1.0](https://github.com/olenbetong/appframe-proxy/compare/v1.0.4...v1.1.0) - 2018-11-16
 
 #### Added
 
@@ -121,19 +127,19 @@ module.exports = getConfig;
 
  * Image requests should now work properly
 
-### [1.0.4](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.3...v1.0.4) - 2018-11-16
+### [1.0.4](https://github.com/olenbetong/appframe-proxy/compare/v1.0.3...v1.0.4) - 2018-11-16
 
  * Changed repository to GitHub
  * Changed formatting of changes section
 
-### [1.0.3](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.2...v1.0.3) - 2018-11-03
+### [1.0.3](https://github.com/olenbetong/appframe-proxy/compare/v1.0.2...v1.0.3) - 2018-11-03
 
  * Fixed wrong binary name
 
-### [1.0.2](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.1...v1.0.2) - 2018-11-09
+### [1.0.2](https://github.com/olenbetong/appframe-proxy/compare/v1.0.1...v1.0.2) - 2018-11-09
 
  * Moved AppframeClient class to separate package `@olenbetong/appframe-client`
 
-### [1.0.1](https://github.com/bjornarvh/appframe-proxy/compare/v1.0.0...v1.0.1) - 2018-11-09
+### [1.0.1](https://github.com/olenbetong/appframe-proxy/compare/v1.0.0...v1.0.1) - 2018-11-09
 
  * Fixed provided options ignored when using CommonJS
