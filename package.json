@@ -22,11 +22,11 @@
   "author": "Bjørnar Vister Hansen <bvh@olenbetong.no>",
   "license": "MIT",
   "devDependencies": {
-    "dotenv": "^6.1.0",
-    "eslint": "^5.9.0",
-    "eslint-plugin-jest": "^22.0.1",
+    "dotenv": "^6.2.0",
+    "eslint": "^5.10.0",
+    "eslint-plugin-jest": "^22.1.2",
     "jest": "^23.6.0",
-    "jest-fetch-mock": "^2.0.0"
+    "jest-fetch-mock": "^2.0.1"
   },
   "dependencies": {
     "@olenbetong/appframe-client": "^2.1.0",
