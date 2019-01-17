@@ -29,9 +29,9 @@
     "jest-fetch-mock": "^2.0.1"
   },
   "dependencies": {
-    "@olenbetong/appframe-client": "^2.1.0",
+    "@olenbetong/appframe-client": "^2.1.2",
     "express": "^4.16.4",
-    "express-http-proxy": "^1.5.0",
+    "express-http-proxy": "^1.5.1",
     "is-promise": "^2.1.0",
     "minimist": "^1.2.0",
     "readline-sync": "^1.4.9"
