@@ -93,6 +93,12 @@ module.exports = getConfig;
 
 ## Changelog
 
+### [1.1.5](https://github.com/olenbetong/appframe-proxy/compare/v1.1.4...v1.1.5) - 2019-01-17
+
+#### Changed
+
+ * Updated dependencies
+
 ### [1.1.4](https://github.com/olenbetong/appframe-proxy/compare/v1.1.3...v1.1.4) - 2018-12-18
 
 #### Changed
