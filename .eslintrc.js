@@ -9,25 +9,10 @@ module.exports = {
         "ecmaVersion": 2018
     },
     "plugins": [
-        "jest"
+        "jest",
+        "prettier"
     ],
     "rules": {
-        "indent": [
-            "error",
-            "tab"
-        ],
-        "linebreak-style": [
-            "off",
-            "windows"
-        ],
-        "no-console": "off",
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
+        "no-console": "off"
     }
 };

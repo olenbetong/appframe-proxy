@@ -1,63 +1,72 @@
-const AppframeClient = require('@olenbetong/appframe-client');
-const isPromise = require('is-promise');
-const proxy = require('express-http-proxy');
+const AppframeClient = require("@olenbetong/appframe-client");
+const isPromise = require("is-promise");
+const proxy = require("express-http-proxy");
 
 module.exports = async function createMiddleware(options) {
-	const {
-		hostname,
-		password,
-		protocol = 'https',
-		proxyOptions = {},
-		username,
-	} = options;
+  const {
+    autoLogin = true,
+    hostname,
+    password,
+    protocol = "https",
+    proxyOptions = {},
+    username
+  } = options;
 
-	const client = new AppframeClient({ hostname, username, password });
-	const { proxyReqOptDecorator, proxyReqPathResolver } = proxyOptions;
+  const client = new AppframeClient({ hostname, username, password });
+  const { proxyReqOptDecorator, proxyReqPathResolver } = proxyOptions;
 
-	proxyOptions.proxyReqOptDecorator = async function(proxyReqOpts, srcReq) {
-		let nextOpts = proxyReqOpts;
-		nextOpts.path = srcReq.baseUrl;
+  proxyOptions.proxyReqOptDecorator = async function(proxyReqOpts, srcReq) {
+    let nextOpts = proxyReqOpts;
+    nextOpts.path = srcReq.baseUrl;
 
-		if (typeof proxyReqOptDecorator === 'function') {
-			nextOpts = proxyReqOptDecorator(proxyReqOpts, srcReq);
-			if (isPromise(nextOpts)) {
-				nextOpts = await nextOpts;
-			}
-		}
+    if (typeof proxyReqOptDecorator === "function") {
+      nextOpts = proxyReqOptDecorator(proxyReqOpts, srcReq);
+      if (isPromise(nextOpts)) {
+        nextOpts = await nextOpts;
+      }
+    }
 
-		nextOpts.headers['X-Requested-With', 'XMLHttpRequest'];
+    nextOpts.headers[("X-Requested-With", "XMLHttpRequest")];
 
-		const sessionCookies = client.getSessionCookies();
-		const currentCookies = nextOpts.headers['Cookie'];
-		const cookies = currentCookies ? currentCookies.split(/;\s*/) : [];
-		
-		const oneHourAgo = new Date();
-		oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    const sessionCookies = client.getSessionCookies();
+    const currentCookies = nextOpts.headers["Cookie"];
+    const cookies = currentCookies ? currentCookies.split(/;\s*/) : [];
 
-		if (sessionCookies.AppframeWebAuth.creation < oneHourAgo) {
-			await client.login();
-		}
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
 
-		['AppframeWebAuth', 'AppframeWebSession'].forEach(key => {
-			cookies.push(`${key}=${sessionCookies[key].value}`);
-		});
+    if (sessionCookies.AppframeWebAuth.creation < oneHourAgo) {
+      await client.login();
+    }
 
-		if (cookies.length >= 2) {
-			nextOpts.headers['Cookie'] = cookies.join(';');
-		}
+    ["AppframeWebAuth", "AppframeWebSession"].forEach(key => {
+      cookies.push(`${key}=${sessionCookies[key].value}`);
+    });
 
-		return nextOpts;
-	};
+    if (cookies.length >= 2) {
+      nextOpts.headers["Cookie"] = cookies.join(";");
+    }
 
-	if (!proxyReqPathResolver) {
-		proxyOptions.proxyReqPathResolver = (req) => req.originalUrl;
-	}
+    return nextOpts;
+  };
 
-	const { success } = await client.login();
+  if (!proxyReqPathResolver) {
+    proxyOptions.proxyReqPathResolver = req => req.originalUrl;
+  }
 
-	if (success) {
-		return proxy(`${protocol}://${hostname}`, proxyOptions);
-	} else {
-		throw new Error(success.error);
-	}
+  async function login() {
+    const { success } = await client.login();
+
+    if (success) {
+      return proxy(`${protocol}://${hostname}`, proxyOptions);
+    } else {
+      throw new Error(success.error);
+    }
+  }
+
+  if (autoLogin) {
+    return await login();
+  }
+
+  return login;
 };

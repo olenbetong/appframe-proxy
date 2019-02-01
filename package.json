@@ -24,9 +24,12 @@
   "devDependencies": {
     "dotenv": "^6.2.0",
     "eslint": "^5.10.0",
+    "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-jest": "^22.1.2",
+    "eslint-plugin-prettier": "^3.0.1",
     "jest": "^23.6.0",
-    "jest-fetch-mock": "^2.0.1"
+    "jest-fetch-mock": "^2.0.1",
+    "prettier": "^1.16.3"
   },
   "dependencies": {
     "@olenbetong/appframe-client": "^2.1.2",

@@ -1,3 +1,1 @@
-describe('Proxy middleware', () => {
-
-});
+describe("Proxy middleware", () => {});
