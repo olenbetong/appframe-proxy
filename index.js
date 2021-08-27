@@ -80,9 +80,8 @@ function requestArg(options) {
 export async function startServer(props) {
   const options = getOptions(props);
   const proxy = await createProxyMiddleware(options);
-  await proxy.login();
-  app.use("/*", proxy);
 
+  app.use("/*", proxy);
   app.listen(options.port, () => {
     console.log(`Appframe proxy listening on port ${options.port}`);
   });
