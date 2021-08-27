@@ -14,7 +14,7 @@
       "require": "./middleware.js"
     }
   },
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A simple proxy server that keeps a user logged in to an AppframeWeb website, and proxies requests to that website.",
   "main": "./index.js",
   "scripts": {
