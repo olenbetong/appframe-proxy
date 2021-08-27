@@ -6,10 +6,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./index.js"
+      "import": "./index.js",
+      "require": "./index.js"
     },
     "./middleware": {
-      "import": "./middleware.js"
+      "import": "./middleware.js",
+      "require": "./middleware.js"
     }
   },
   "version": "1.2.1",

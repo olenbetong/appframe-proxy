@@ -74,9 +74,9 @@ export default async function createMiddleware(options) {
   }
 
   const proxyOptions = {
-    target: `${protocol}://${hostname}`, // target host
-    changeOrigin: true, // needed for virtual hosted sites
-    ws: true, // proxy websockets
+    target: `${protocol}://${hostname}`,
+    changeOrigin: true,
+    ws: false,
     onProxyReq: addAuthCookies,
     onProxyRes: (proxyReq, req, res) => {
       if (res.statusCode === 401) {
