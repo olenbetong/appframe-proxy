@@ -1,14 +1,15 @@
-const express = require("express");
-const minimist = require("minimist");
-const readline = require("readline-sync");
+import express from "express";
+import minimist from "minimist";
+import readline from "readline-sync";
+import createProxyMiddleware from "./middleware.js";
+
 const args = minimist(process.argv.slice(2));
 const app = express();
-const proxyFactory = require("./middleware");
 
 function getOptions(provided = {}) {
   const options = {
     port: 8082,
-    ...provided
+    ...provided,
   };
 
   if (!options.username) {
@@ -16,7 +17,7 @@ function getOptions(provided = {}) {
       options.username = args.username || args.login || args.user;
     } else {
       options.username = requestArg({
-        title: "What 's your login?"
+        title: "What 's your login?",
       });
     }
   }
@@ -27,7 +28,7 @@ function getOptions(provided = {}) {
     } else {
       options.password = requestArg({
         secret: true,
-        title: "What's your password?"
+        title: "What's your password?",
       });
     }
   }
@@ -37,7 +38,7 @@ function getOptions(provided = {}) {
       options.hostname = args.domain || args.hostname || args.host;
     } else {
       options.hostname = requestArg({
-        title: "Which domain should we connect to?"
+        title: "Which domain should we connect to?",
       });
     }
   }
@@ -65,7 +66,7 @@ function requestArg(options) {
   while (!answer) {
     (answer = readline.question(question + " ")),
       {
-        hideEchoBack: secret
+        hideEchoBack: secret,
       };
 
     if (!answer && defaultAnswer) {
@@ -76,16 +77,13 @@ function requestArg(options) {
   return answer;
 }
 
-async function startServer(props) {
+export async function startServer(props) {
   const options = getOptions(props);
-  const proxy = await proxyFactory(options);
+  const proxy = await createProxyMiddleware(options);
+  await proxy.login();
   app.use("/*", proxy);
 
   app.listen(options.port, () => {
     console.log(`Appframe proxy listening on port ${options.port}`);
   });
 }
-
-module.exports = {
-  startServer
-};

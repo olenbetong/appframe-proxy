@@ -1,72 +1,102 @@
-const AppframeClient = require("@olenbetong/appframe-client");
-const isPromise = require("is-promise");
-const proxy = require("express-http-proxy");
+import { createProxyMiddleware } from "http-proxy-middleware";
+import https from "node:https";
 
-module.exports = async function createMiddleware(options) {
+function login(hostname, username, password) {
+  return new Promise((resolve, reject) => {
+    let data = `username=${encodeURIComponent(
+      username,
+    )}&password=${encodeURIComponent(password)}&remember=false`;
+    let options = {
+      hostname,
+      port: 443,
+      path: "/login",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": data.length,
+      },
+    };
+
+    console.log("Authenticating...");
+
+    let request = https.request(options, (response) => {
+      if (response.statusCode < 400) {
+        let cookies = response.headers["set-cookie"];
+        let cookieObj = {};
+        for (let cookie of cookies) {
+          let [keyValue] = cookie.split(";");
+          let [key, value] = keyValue.split("=");
+
+          if (["AppframeWebSession", "AppframeWebAuth"].includes(key)) {
+            cookieObj[key] = value;
+          }
+        }
+
+        console.log("Authentication successfull.");
+
+        resolve(cookieObj);
+      } else {
+        reject(
+          Error(
+            `Authentication failed: ${response.statusCode} ${response.statusMessage}`,
+          ),
+        );
+      }
+    });
+
+    request.write(data);
+    request.end();
+  });
+}
+
+export default async function createMiddleware(options) {
   const {
     autoLogin = true,
     hostname,
     password,
     protocol = "https",
-    proxyOptions = {},
-    username
+    username,
   } = options;
+  let authCookies = null;
 
-  const client = new AppframeClient({ hostname, username, password });
-  const { proxyReqOptDecorator, proxyReqPathResolver } = proxyOptions;
+  async function addAuthCookies(proxyReq) {
+    proxyReq.socket.pause();
+    if (authCookies === null) {
+      authCookies = await login(hostname, username, password);
+    }
 
-  proxyOptions.proxyReqOptDecorator = async function(proxyReqOpts, srcReq) {
-    let nextOpts = proxyReqOpts;
-    nextOpts.path = srcReq.baseUrl;
+    let cookies = [];
+    cookies.push(`AppframeWebAuth=${authCookies["AppframeWebAuth"]}`);
+    cookies.push(`AppframeWebSession=${authCookies["AppframeWebSession"]}`);
+    proxyReq.setHeader("cookie", cookies.join(";"));
+    proxyReq.socket.resume();
+  }
 
-    if (typeof proxyReqOptDecorator === "function") {
-      nextOpts = proxyReqOptDecorator(proxyReqOpts, srcReq);
-      if (isPromise(nextOpts)) {
-        nextOpts = await nextOpts;
+  const proxyOptions = {
+    target: `${protocol}://${hostname}`, // target host
+    changeOrigin: true, // needed for virtual hosted sites
+    ws: true, // proxy websockets
+    onProxyReq: addAuthCookies,
+    onProxyRes: (proxyReq, req, res) => {
+      if (res.statusCode === 401) {
+        authCookies = null;
+        login(hostname, username, password);
       }
-    }
-
-    nextOpts.headers[("X-Requested-With", "XMLHttpRequest")];
-
-    const sessionCookies = client.getSessionCookies();
-    const currentCookies = nextOpts.headers["Cookie"];
-    const cookies = currentCookies ? currentCookies.split(/;\s*/) : [];
-
-    const oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
-    if (sessionCookies.AppframeWebAuth.creation < oneHourAgo) {
-      await client.login();
-    }
-
-    ["AppframeWebAuth", "AppframeWebSession"].forEach(key => {
-      cookies.push(`${key}=${sessionCookies[key].value}`);
-    });
-
-    if (cookies.length >= 2) {
-      nextOpts.headers["Cookie"] = cookies.join(";");
-    }
-
-    return nextOpts;
+    },
+    pathRewrite: {},
+    router: {},
   };
 
-  if (!proxyReqPathResolver) {
-    proxyOptions.proxyReqPathResolver = req => req.originalUrl;
-  }
-
-  async function login() {
-    const { success } = await client.login();
-
-    if (success) {
-      return proxy(`${protocol}://${hostname}`, proxyOptions);
-    } else {
-      throw new Error(success.error);
-    }
-  }
+  const proxy = createProxyMiddleware(proxyOptions);
+  proxy.login = async () => {
+    authCookies = await login(hostname, username, password);
+    return authCookies;
+  };
 
   if (autoLogin) {
-    return await login();
+    authCookies = await login(hostname, username, password);
   }
 
-  return login;
-};
+  return proxy;
+}

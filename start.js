@@ -1,8 +1,10 @@
-const proxy = require("./");
-require("dotenv").config();
+import { startServer } from "./index.js";
+import { config } from "dotenv";
 
-proxy.startServer({
-  hostname: process.env.APPFRAME_HOSTNAME,
+config();
+
+startServer({
+  hostname: "dev.obet.no",
   password: process.env.APPFRAME_PWD,
-  username: process.env.APPFRAME_LOGIN
+  username: process.env.APPFRAME_LOGIN,
 });
