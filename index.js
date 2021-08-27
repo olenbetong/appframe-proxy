@@ -77,6 +77,8 @@ function requestArg(options) {
   return answer;
 }
 
+export { createProxyMiddleware };
+
 export async function startServer(props) {
   const options = getOptions(props);
   const proxy = await createProxyMiddleware(options);

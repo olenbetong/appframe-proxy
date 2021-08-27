@@ -7,6 +7,9 @@
   "exports": {
     ".": {
       "import": "./index.js"
+    },
+    "./middleware": {
+      "import": "./middleware.js"
     }
   },
   "version": "1.2.0",
