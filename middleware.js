@@ -64,6 +64,8 @@ export default async function createMiddleware(options) {
     proxyReq.socket.pause();
     if (authCookies === null) {
       authCookies = await login(hostname, username, password);
+    } else if (authCookies instanceof Promise) {
+      authCookies = await authCookies;
     }
 
     let cookies = [];
@@ -78,10 +80,10 @@ export default async function createMiddleware(options) {
     changeOrigin: true,
     ws: false,
     onProxyReq: addAuthCookies,
-    onProxyRes: (proxyReq, req, res) => {
-      if (res.statusCode === 401) {
+    onProxyRes: (proxyRes) => {
+      if (proxyRes.statusCode === 401) {
         authCookies = null;
-        login(hostname, username, password);
+        authCookies = login(hostname, username, password);
       }
     },
     pathRewrite: {},
