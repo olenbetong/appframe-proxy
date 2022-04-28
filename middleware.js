@@ -16,7 +16,7 @@ async function login(hostname, username, password) {
         resolve(authCookies);
         return;
       } else {
-        console.log("Automatic retuthentication after 15 minutes");
+        console.log("Renewing authentication cookies...");
         lastLogin.delete(hostname);
       }
     }
