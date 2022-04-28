@@ -3,8 +3,13 @@ import https from "node:https";
 
 const lastLogin = new Map();
 
-function login(hostname, username, password) {
-  return new Promise((resolve, reject) => {
+let currentLogin = null;
+
+async function login(hostname, username, password) {
+  if (currentLogin) {
+    return await currentLogin;
+  }
+  let loginPromise = new Promise((resolve, reject) => {
     if (lastLogin.has(hostname)) {
       let { timestamp, authCookies } = lastLogin.get(hostname);
       if (Date.now() - timestamp < 1000 * 60 * 15) {
@@ -68,6 +73,11 @@ function login(hostname, username, password) {
     request.write(data);
     request.end();
   });
+
+  currentLogin = loginPromise;
+  let result = await loginPromise;
+  currentLogin = null;
+  return result;
 }
 
 export default async function createMiddleware(options) {
