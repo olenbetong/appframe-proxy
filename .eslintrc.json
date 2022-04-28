@@ -9,7 +9,7 @@
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["jest", "prettier"],
+  "plugins": ["prettier"],
   "rules": {
     "no-console": "off"
   }
