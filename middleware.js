@@ -1,11 +1,26 @@
-import { createProxyMiddleware } from "http-proxy-middleware";
+import expressProxy from "express-http-proxy";
 import https from "node:https";
+
+const lastLogin = new Map();
 
 function login(hostname, username, password) {
   return new Promise((resolve, reject) => {
+    if (lastLogin.has(hostname)) {
+      let { timestamp, authCookies } = lastLogin.get(hostname);
+      if (Date.now() - timestamp < 1000 * 60 * 15) {
+        resolve(authCookies);
+        return;
+      } else {
+        console.log("Automatic retuthentication after 15 minutes");
+        lastLogin.delete(hostname);
+      }
+    }
+
     let data = `username=${encodeURIComponent(
       username,
-    )}&password=${encodeURIComponent(password)}&remember=false`;
+    )}&password=${encodeURIComponent(
+      password,
+    )}&remember=true&RequireTwoFactor=0`;
     let options = {
       hostname,
       port: 443,
@@ -35,6 +50,11 @@ function login(hostname, username, password) {
 
         console.log("Authentication successfull.");
 
+        lastLogin.set(hostname, {
+          timestamp: Date.now(),
+          authCookies: cookieObj,
+        });
+
         resolve(cookieObj);
       } else {
         reject(
@@ -58,46 +78,29 @@ export default async function createMiddleware(options) {
     protocol = "https",
     username,
   } = options;
-  let authCookies = null;
 
-  async function addAuthCookies(proxyReq) {
-    proxyReq.socket.pause();
-    if (authCookies === null) {
-      authCookies = await login(hostname, username, password);
-    } else if (authCookies instanceof Promise) {
-      authCookies = await authCookies;
-    }
-
-    let cookies = [];
-    cookies.push(`AppframeWebAuth=${authCookies["AppframeWebAuth"]}`);
-    cookies.push(`AppframeWebSession=${authCookies["AppframeWebSession"]}`);
-    proxyReq.setHeader("cookie", cookies.join(";"));
-    proxyReq.socket.resume();
-  }
-
-  const proxyOptions = {
-    target: `${protocol}://${hostname}`,
-    changeOrigin: true,
-    ws: false,
-    onProxyReq: addAuthCookies,
-    onProxyRes: (proxyRes) => {
-      if (proxyRes.statusCode === 401) {
-        authCookies = null;
-        authCookies = login(hostname, username, password);
+  const proxy = expressProxy(`${protocol}://${hostname}`, {
+    proxyReqOptDecorator: async function (proxyReqOpts) {
+      if (!proxyReqOpts.path.startsWith("/login")) {
+        let authCookies = await login(hostname, username, password);
+        let cookies = [];
+        cookies.push(`AppframeWebAuth=${authCookies["AppframeWebAuth"]}`);
+        cookies.push(`AppframeWebSession=${authCookies["AppframeWebSession"]}`);
+        proxyReqOpts.headers["cookie"] = cookies.join(";");
+        return proxyReqOpts;
       }
     },
-    pathRewrite: {},
-    router: {},
-  };
+    proxyReqPathResolver: function (req) {
+      return req.originalUrl;
+    },
+  });
 
-  const proxy = createProxyMiddleware(proxyOptions);
   proxy.login = async () => {
-    authCookies = await login(hostname, username, password);
-    return authCookies;
+    return await login(hostname, username, password);
   };
 
   if (autoLogin) {
-    authCookies = await login(hostname, username, password);
+    await login(hostname, username, password);
   }
 
   return proxy;

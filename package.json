@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "http-proxy-middleware": "^2.0.1",
+    "express-http-proxy": "^1.6.3",
     "minimist": "^1.2.0",
     "readline-sync": "^1.4.10"
   }
